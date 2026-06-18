@@ -1,8 +1,58 @@
 from fastapi import FastAPI, Request
+from fastapi.responses import Response
 import uvicorn
 import json
+import random
+import time
 
 app = FastAPI()
+
+# Simple metric storage
+metrics = {
+    "vllm:e2e_request_latency_seconds_count": 0,
+    "vllm:e2e_request_latency_seconds_sum": 0.0,
+    "vllm:prompt_tokens_total": 0,
+    "vllm:generation_tokens_total": 0,
+    "vllm:kv_cache_usage_perc": 0.1,
+    "vllm:num_requests_running": 0,
+    "vllm:num_requests_waiting": 0,
+}
+
+@app.get("/metrics")
+async def get_metrics():
+    # Simulate some changes in metrics
+    metrics["vllm:kv_cache_usage_perc"] = random.uniform(0.1, 0.8)
+    metrics["vllm:num_requests_running"] = random.randint(0, 5)
+    metrics["vllm:prompt_tokens_total"] += random.randint(100, 500)
+    metrics["vllm:generation_tokens_total"] += random.randint(50, 200)
+    
+    prom_metrics = []
+    for k, v in metrics.items():
+        prom_metrics.append(f"{k} {v}")
+    
+    # Add some histogram buckets for latency to satisfy the dashboard
+    prom_metrics.append('vllm:e2e_request_latency_seconds_bucket{le="1.0"} 1')
+    prom_metrics.append('vllm:e2e_request_latency_seconds_bucket{le="2.0"} 2')
+    prom_metrics.append('vllm:e2e_request_latency_seconds_bucket{le="5.0"} 5')
+    prom_metrics.append('vllm:e2e_request_latency_seconds_bucket{le="+Inf"} 10')
+    
+    # Add TTFT and ITL buckets
+    prom_metrics.append('vllm:time_to_first_token_seconds_bucket{le="0.1"} 1')
+    prom_metrics.append('vllm:time_to_first_token_seconds_bucket{le="0.5"} 2')
+    prom_metrics.append('vllm:time_to_first_token_seconds_bucket{le="+Inf"} 3')
+    
+    prom_metrics.append('vllm:request_time_per_output_token_seconds_bucket{le="0.01"} 1')
+    prom_metrics.append('vllm:request_time_per_output_token_seconds_bucket{le="0.05"} 2')
+    prom_metrics.append('vllm:request_time_per_output_token_seconds_bucket{le="+Inf"} 3')
+
+    # Add health metrics
+    prom_metrics.append('vllm:request_success_total{status="success"} 100')
+    
+    # Add prefix cache metrics
+    prom_metrics.append('vllm:prefix_cache_hits_total 50')
+    prom_metrics.append('vllm:prefix_cache_queries_total 100')
+    
+    return Response(content="\n".join(prom_metrics) + "\n", media_type="text/plain")
 
 @app.post("/v1/chat/completions")
 async def chat_completions(request: Request):

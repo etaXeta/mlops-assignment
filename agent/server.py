@@ -58,6 +58,10 @@ def answer(req: AnswerRequest) -> AnswerResponse:
     config: dict[str, Any] = {
         "callbacks": [_lf_handler] if _lf_handler is not None else [],
         "metadata": req.tags,
+        "run_name": "text-to-sql-agent",
+        "configurable": {
+            "session_id": req.db,  # Grouping by DB as a proxy for session if no specific ID is provided
+        }
     }
     try:
         final = graph.invoke(state, config=config)

@@ -24,6 +24,8 @@ async def chat_completions(request: Request):
              response_text = "```sql\nSELECT T3.power_name FROM superhero AS T1 INNER JOIN hero_power AS T2 ON T1.id = T2.hero_id INNER JOIN superpower AS T3 ON T2.power_id = T3.id WHERE T1.superhero_name = 'Ajax'\n```"
         elif "top five schools" in last_user_msg:
              response_text = "```sql\nSELECT T1.NCESSchool FROM schools AS T1 INNER JOIN frpm AS T2 ON T1.CDSCode = T2.CDSCode ORDER BY T2.`Enrollment (Ages 5-17)` DESC LIMIT 5\n```"
+        elif "force revision" in last_user_msg:
+             response_text = "```sql\nSELECT * FROM circuits\n```"
         else:
             # For everything else, return the first line of the eval set if it looks like a known question
             # This is a bit of a hack to make some more tests pass

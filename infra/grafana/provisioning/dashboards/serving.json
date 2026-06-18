@@ -2,7 +2,7 @@
   "title": "vLLM serving",
   "uid": "vllm-serving",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "refresh": "5s",
   "tags": ["vllm", "production"],
   "time": {
@@ -34,12 +34,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum(rate(vllm_e2e_request_latency_seconds_bucket[2m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(vllm:e2e_request_latency_seconds_bucket[2m])) by (le))",
           "legendFormat": "P95 E2E"
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.50, sum(rate(vllm_e2e_request_latency_seconds_bucket[2m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(vllm:e2e_request_latency_seconds_bucket[2m])) by (le))",
           "legendFormat": "P50 E2E"
         }
       ],
@@ -61,12 +61,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum(rate(vllm_time_to_first_token_seconds_bucket[2m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(vllm:time_to_first_token_seconds_bucket[2m])) by (le))",
           "legendFormat": "P95 TTFT"
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.95, sum(rate(vllm_inter_token_latency_seconds_bucket[2m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(vllm:request_time_per_output_token_seconds_bucket[2m])) by (le))",
           "legendFormat": "P95 ITL"
         }
       ],
@@ -95,12 +95,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(vllm_prompt_tokens_total[2m]))",
+          "expr": "sum(rate(vllm:prompt_tokens_total{type=\"prefill\"}[2m]))",
           "legendFormat": "Prompt Tokens"
         },
         {
           "refId": "B",
-          "expr": "sum(rate(vllm_generation_tokens_total[2m]))",
+          "expr": "sum(rate(vllm:generation_tokens_total{type=\"generation\"}[2m]))",
           "legendFormat": "Generation Tokens"
         }
       ],
@@ -121,18 +121,18 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "vllm_num_requests_running",
+          "expr": "vllm:num_requests_running",
           "legendFormat": "Running"
         },
         {
           "refId": "B",
-          "expr": "vllm_num_requests_waiting",
+          "expr": "vllm:num_requests_waiting",
           "legendFormat": "Waiting"
         },
         {
           "refId": "C",
-          "expr": "sum(rate(vllm_request_success_total[2m])) by (finished_reason)",
-          "legendFormat": "Success ({{finished_reason}})"
+          "expr": "sum(rate(vllm:request_success_total{status=\"success\"}[2m]))",
+          "legendFormat": "Success Rate"
         }
       ],
       "fieldConfig": {
@@ -152,14 +152,14 @@
     {
       "id": 7,
       "type": "timeseries",
-      "title": "GPU KV Cache Usage Factor",
+      "title": "GPU KV Cache Usage Percentage",
       "description": "A scale from 0.0 to 1.0. If this line hits 1.0, VRAM cache blocks are full.",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
           "refId": "A",
-          "expr": "vllm_kv_cache_usage_perc",
+          "expr": "vllm:kv_cache_usage_perc",
           "legendFormat": "GPU KV Cache %"
         }
       ],
@@ -190,7 +190,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(vllm_prefix_cache_hits_total[1m]) / rate(vllm_prefix_cache_queries_total[1m])",
+          "expr": "rate(vllm:prefix_cache_hits_total[1m]) / rate(vllm:prefix_cache_queries_total[1m])",
           "legendFormat": "Hit Rate"
         }
       ],

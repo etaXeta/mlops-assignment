@@ -95,12 +95,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(vllm:prompt_tokens_total{type=\"prefill\"}[2m]))",
+          "expr": "sum(rate(vllm:prompt_tokens_total[2m]))",
           "legendFormat": "Prompt Tokens"
         },
         {
           "refId": "B",
-          "expr": "sum(rate(vllm:generation_tokens_total{type=\"generation\"}[2m]))",
+          "expr": "sum(rate(vllm:generation_tokens_total[2m]))",
           "legendFormat": "Generation Tokens"
         }
       ],

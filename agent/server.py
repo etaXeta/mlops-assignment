@@ -30,7 +30,7 @@ host = os.environ.get("LANGFUSE_HOST", "http://localhost:3001")
 if pk and sk:
     try:
         from langfuse.langchain import CallbackHandler
-        _lf_handler = CallbackHandler(public_key=pk, secret_key=sk, host=host)
+        _lf_handler = CallbackHandler()
         print(f"[DEBUG] Langfuse Initialized successfully for host: {host}")
     except Exception as e:
         print(f"[DEBUG] Langfuse Initialization FAILED: {e}")

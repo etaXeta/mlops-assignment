@@ -58,19 +58,77 @@ def matches(gold_rows: list[tuple] | None, pred_rows: list[tuple] | None) -> boo
 
 def eval_one(question: dict, agent_url: str) -> dict:
     """Score one question. Return a dict capturing per-iteration correctness."""
-    raise NotImplementedError("Phase 5")
+    db_id = question["db_id"]
+    gold_sql = question["gold_sql"]
+    
+    # Get gold rows
+    _, gold_rows, _ = run_sql(db_id, gold_sql)
+    
+    # Call agent
+    resp = httpx.post(
+        agent_url,
+        json={"question": question["question"], "db": db_id},
+        timeout=60.0,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    
+    history = data.get("history", [])
+    iterations = data.get("iterations", 0)
+    
+    # Per-iteration correctness
+    # We need to check the SQL at each step of the history
+    iter_results = []
+    
+    current_sql = ""
+    for entry in history:
+        if "sql" in entry:
+            current_sql = entry["sql"]
+            ok, pred_rows, _ = run_sql(db_id, current_sql)
+            is_correct = matches(gold_rows, pred_rows)
+            iter_results.append({
+                "node": entry.get("node"),
+                "sql": current_sql,
+                "correct": is_correct
+            })
+            
+    return {
+        "question": question["question"],
+        "db_id": db_id,
+        "iterations_taken": iterations,
+        "iter_results": iter_results,
+        "final_correct": iter_results[-1]["correct"] if iter_results else False
+    }
 
 
 def summarize(results: list[dict]) -> dict:
-    """Aggregate per-question results.
-
-    Per-iteration carry-forward: if the agent terminated at iteration j < k
-    (verify said ok at j, or it hit MAX_ITERATIONS at j < k), treat the
-    question's iteration-k result as identical to its iteration-j result.
-    The agent stopped emitting; whatever it had at termination is what
-    would have been served had we polled at iteration k.
-    """
-    raise NotImplementedError("Phase 5")
+    """Aggregate per-question results."""
+    total = len(results)
+    if total == 0:
+        return {}
+        
+    # We want to know pass rate after 1 iteration, 2 iterations, etc.
+    # Max iterations could be up to 4 (1 generate + 3 revise)
+    max_iters = 0
+    for r in results:
+        max_iters = max(max_iters, len(r["iter_results"]))
+        
+    pass_rates = {}
+    for k in range(1, max_iters + 1):
+        correct_at_k = 0
+        for r in results:
+            # If agent finished at j < k, use its result at j
+            idx = min(k, len(r["iter_results"])) - 1
+            if idx >= 0 and r["iter_results"][idx]["correct"]:
+                correct_at_k += 1
+        pass_rates[f"iter_{k}"] = correct_at_k / total
+        
+    return {
+        "total_questions": total,
+        "final_pass_rate": sum(1 for r in results if r["final_correct"]) / total,
+        "per_iteration_pass_rate": pass_rates,
+        "avg_iterations": sum(r["iterations_taken"] for r in results) / total
+    }
 
 
 # ---------- Main (provided) --------------------------------------------

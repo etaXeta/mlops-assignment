@@ -21,7 +21,7 @@ exec uv run --with "transformers==4.48.3" python -m vllm.entrypoints.openai.api_
     --port 8000 \
     --tensor-parallel-size 1 \
     --trust-remote-code \
-    --max-model-len 4096 \
+    --max-model-len 8192 \
     --gpu-memory-utilization 0.90 \
     --enable-chunked-prefill true \
     --max-num-seqs 256 \

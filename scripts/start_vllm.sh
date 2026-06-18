@@ -23,7 +23,7 @@ exec uv run --with "transformers==4.48.3" python -m vllm.entrypoints.openai.api_
     --trust-remote-code \
     --max-model-len 4096 \
     --gpu-memory-utilization 0.90 \
-    --enable-chunked-prefill \
+    --enable-chunked-prefill true \
     --max-num-seqs 256 \
     --enable-prefix-caching \
     --disable-log-requests

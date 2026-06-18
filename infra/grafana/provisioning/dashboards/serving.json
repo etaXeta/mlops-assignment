@@ -159,7 +159,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "vllm_gpu_cache_usage_perc",
+          "expr": "vllm_kv_cache_usage_perc",
           "legendFormat": "GPU KV Cache %"
         }
       ],

@@ -23,11 +23,19 @@ from agent.graph import AgentState, graph  # noqa: E402
 # are NOT swallowed - a misconfigured Langfuse should not silently
 # produce zero traces.
 _lf_handler: Any = None
-if os.environ.get("LANGFUSE_PUBLIC_KEY") and os.environ.get("LANGFUSE_SECRET_KEY"):
-    from langfuse.langchain import CallbackHandler
+pk = os.environ.get("LANGFUSE_PUBLIC_KEY")
+sk = os.environ.get("LANGFUSE_SECRET_KEY")
+host = os.environ.get("LANGFUSE_HOST", "http://localhost:3001")
 
-    _lf_handler = CallbackHandler()
-
+if pk and sk:
+    try:
+        from langfuse.callback import CallbackHandler
+        _lf_handler = CallbackHandler(public_key=pk, secret_key=sk, host=host)
+        print(f"[DEBUG] Langfuse Initialized successfully for host: {host}")
+    except Exception as e:
+        print(f"[DEBUG] Langfuse Initialization FAILED: {e}")
+else:
+    print("[DEBUG] Langfuse DISABLED: Missing PK or SK in environment")
 
 app = FastAPI()
 

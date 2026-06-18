@@ -15,7 +15,7 @@ MODEL="Qwen/Qwen3-30B-A3B-Instruct-2507"
 # - enable-prefix-caching: true (optimizes agent's repeat schema calls)
 # - trust-remote-code: required for Qwen3
 
-exec uv run --with "transformers==4.48.3" python -m vllm.entrypoints.openai.api_server \
+exec uv run --with "transformers==4.49.0.rc0" python -m vllm.entrypoints.openai.api_server \
     --model "$MODEL" \
     --host 0.0.0.0 \
     --port 8000 \
@@ -26,4 +26,4 @@ exec uv run --with "transformers==4.48.3" python -m vllm.entrypoints.openai.api_
     --enable-chunked-prefill true \
     --max-num-seqs 256 \
     --enable-prefix-caching \
-    --disable-log-requests
+    --enable-log-requests

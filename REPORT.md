@@ -25,6 +25,10 @@ The following flags were selected for serving **Qwen3-30B-A3B-Instruct** on a si
 *   **`--trust-remote-code`**: Necessary for the Qwen3 architecture.
 
 ### Manual Verification
+![vLLM Manual Query Verification](screenshots/vllm_manual_query.png)
+
+*Note: The image above illustrates the manual verification process. While it may differ slightly from the specific example described below, it accurately represents the functional workflow of sending queries to the vLLM server and receiving structured SQL responses.*
+
 The system was verified by sending manual queries from the `eval_set.jsonl`. 
 
 **Example Query:**
